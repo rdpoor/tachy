@@ -1,18 +1,18 @@
 # tachy
-Use a microphone and some signal processing to create a speedometer
+Create a speedometer using vibration sensing and some signal processing
 
 `tachy` (pronounced "TAK-ee") is a microprocessor-based speedometer designed for vehicles with two axles.
-It uses a microphone to measure the road noise as the vehicle moves, feeding the signal to an autocorrelation 
-algorithm to estimate the vehicle's speed.
+Using an accelerometer to sense vibration in the wheels as the vehicle moves, it feeds the signal to an 
+autocorrelation algorithm to estimate the vehicle's speed.
 
-Although tachy was originally designed as a fun experiment, it may find a practical use since it doesn't
-require any modifications or permanent attachments to the vehicle.
+`tachy` was originally designed as a somewhat silly hack to measure speed.  But since it doesn't require 
+any modifications or permanent attachments to the vehicle, it may be a useful solution for some applications.
 
 ## How it works
 
-tachy continually digitizes a road noise using a microphone and writes the results into acircular buffer.  
-It uses a simple autocorrelation routine to find the delay between road noise contributed by the front tires to 
-the same road noise contributed by the rear tires.
+tachy continually digitizes a road noise using an accelerometer and writes the results into a circular buffer.  
+It uses a simple autocorrelation routine to find the delay between road noise contributed by the front wheels to 
+the same road noise contributed by the rear wheels.
 
 ## About resolution and minimum speed
 
@@ -29,12 +29,13 @@ the following table helps give some insights:
 |50.33|81|22.5|
 |100.7|162|45|
 
-So as one example, assume we are configuring `tachy` for a car with a wheelbase of 2.7 meters.
+As an example, assume we are configuring `tachy` for a car with a wheelbase of 2.7 meters.
 
 The sampling rate determines the highest speed we can resolve.  If our car with its wheelbase
-of 2.7 meters is traveling 45 meters per second (i.e. 100 miles per hour or 162 km/hour), then
-60 milliseconds will elapse between the time a bump hits the front tire and the same bump hits 
-the rear tire.  
+of 2.7 meters is traveling 45 meters per second (i.e. about 100 miles per hour or 162 km/hour),
+then the rear wheel will be in the same spot on the road that the front wheel was 60 milliseconds
+earlier.  In other words, if there was a small bump in the road, our sampled signal would contain
+two small peaks, 60 milliseconds apart.
 
 In order to get good resolution, we want take at least ten samples between those two
 events, so our sampling interval must be 6 milliseconds or 167 samples/second.
@@ -46,8 +47,7 @@ bump" and "rear bump".  If the lowest speed we're interested in is 2.5 meters/se
 "rear bump".  With a sampling rate of 167 samples/second, then we need 2 * 167 * 2.7 / 2.5 
 samples = 361 samples.
 
-That's not huge, so we might as well splurge and round up to 512 samples (the nearest power 
-of two) since this makes the circular buffer indeces easy to compute.  With a buffer that is
-512 samples long, we can measure speeds as low as 1.76 meters / second (i.e. 3.94 miles/hour 
-or 6.34 km/hour).
-
+Rather than make our buffer 361 samples long, we might as well splurge and round our buffer
+up to the nearest power of two, or 512 samples -- this simplifies updating the indeces for
+our circular buffer.  With a 512 sample buffer, we can measure speeds as low as 1.76 meters
+per second (i.e. 3.94 miles/hour or 6.34 km/hour).

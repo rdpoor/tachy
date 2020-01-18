@@ -1,24 +1,24 @@
 # tachy
-Create a speedometer using vibration sensing and some signal processing
+Implement a speedometer using vibration sensing and signal processing.
 
 `tachy` (pronounced "TAK-ee") is a microprocessor-based speedometer designed for vehicles with two axles.
 Using an accelerometer to sense vibration in the wheels as the vehicle moves, it feeds the signal to an 
 autocorrelation algorithm to estimate the vehicle's speed.
 
-`tachy` was originally designed as a somewhat silly hack to measure speed.  But since it doesn't require 
+`tachy` was originally designed as a somewhat silly technique to measure speed.  But since it doesn't require 
 any modifications or permanent attachments to the vehicle, it may be a useful solution for some applications.
 
 ## How it works
 
 tachy continually digitizes a road noise using an accelerometer and writes the results into a circular buffer.  
 It uses a simple autocorrelation routine to find the delay between road noise contributed by the front wheels to 
-the same road noise contributed by the rear wheels.
+the same road noise contributed by the rear wheels and converts that to a speed measurement.
 
 ## About resolution and minimum speed
 
-The spacing between the two axles, the sampling rate and the size of the circular buffer determine 
-the resolution and minimum speed that `tachy` is able to measure.  Before launching into the theory, 
-the following table helps give some insights:
+The spacing between the two axles, the sampling rate and the size of the circular buffer determine the
+resolution and minimum speed that `tachy` is able to measure.  Before launching into the derivation, the 
+following table gives some insights:
 
 |miles/hour|km/hour|meters/second|
 |--|--|--|

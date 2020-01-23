@@ -31,9 +31,13 @@
  *
  */
 /*
- * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
+ * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip
+ * Support</a>
  */
 
+#include "adxl345.h"
+#include "adxl345_dev.h"
+#include "adxl345_err.h"
 #include "atmel_start.h"
 #include "atmel_start_pins.h"
 
@@ -81,63 +85,76 @@ static void blink_segments(void);
 static void animation_segments(void);
 static void display_characters(void);
 
-static void turn_on_segments(void)
-{
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N0);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N1);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N2);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N3);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N4);
+static void turn_on_segments(void) {
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N0);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N1);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N2);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N3);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N4);
 
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S0);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S1);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S2);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S3);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S4);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S5);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S6);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S7);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S0);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S1);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S2);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S3);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S4);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S5);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S6);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_S7);
 
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_D01);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_D02);
-	slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_D03);
-}
-static void blink_segments(void)
-{
-	slcd_sync_seg_blink(&SEGMENT_LCD_0, TSLCD_SEG_B0, 1000);
-	slcd_sync_seg_blink(&SEGMENT_LCD_0, TSLCD_SEG_B1, 1000);
-	slcd_sync_seg_blink(&SEGMENT_LCD_0, TSLCD_SEG_B2, 1000);
-}
-static void animation_segments(void)
-{
-	uint32_t segs[8] = {TSLCD_SEG_W0,
-	                    TSLCD_SEG_W1,
-	                    TSLCD_SEG_W2,
-	                    TSLCD_SEG_W3,
-	                    TSLCD_SEG_BT0,
-	                    TSLCD_SEG_BT1,
-	                    TSLCD_SEG_BT2,
-	                    TSLCD_SEG_BT3};
-	slcd_sync_start_animation(&SEGMENT_LCD_0, segs, 8, 1000);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_D01);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_D02);
+  slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_D03);
 }
 
-static void display_characters(void)
-{
-	slcd_sync_write_char(&SEGMENT_LCD_0, '0', 0);
-	slcd_sync_write_char(&SEGMENT_LCD_0, '1', 1);
-	slcd_sync_write_string(&SEGMENT_LCD_0, (uint8_t *)"234", 3, 2);
-	slcd_sync_write_string(&SEGMENT_LCD_0, (uint8_t *)"abcdefgh", 8, 5);
+static void blink_segments(void) {
+  slcd_sync_seg_blink(&SEGMENT_LCD_0, TSLCD_SEG_B0, 1000);
+  slcd_sync_seg_blink(&SEGMENT_LCD_0, TSLCD_SEG_B1, 1000);
+  slcd_sync_seg_blink(&SEGMENT_LCD_0, TSLCD_SEG_B2, 1000);
 }
-int main(void)
-{
-	atmel_start_init();
 
-	/* Replace with your application code */
-	slcd_sync_enable(&SEGMENT_LCD_0);
-	turn_on_segments();
-	blink_segments();
-	animation_segments();
-	display_characters();
-	while (1) {
-	}
+static void animation_segments(void) {
+  uint32_t segs[8] = {TSLCD_SEG_W0,  TSLCD_SEG_W1,  TSLCD_SEG_W2,
+                      TSLCD_SEG_W3,  TSLCD_SEG_BT0, TSLCD_SEG_BT1,
+                      TSLCD_SEG_BT2, TSLCD_SEG_BT3};
+  slcd_sync_start_animation(&SEGMENT_LCD_0, segs, 8, 1000);
+}
+
+static void display_characters(void) {
+  slcd_sync_write_char(&SEGMENT_LCD_0, '0', 0);
+  slcd_sync_write_char(&SEGMENT_LCD_0, '1', 1);
+  slcd_sync_write_string(&SEGMENT_LCD_0, (uint8_t *)"234", 3, 2);
+  slcd_sync_write_string(&SEGMENT_LCD_0, (uint8_t *)"abcdefgh", 8, 5);
+}
+
+int main(void) {
+  atmel_start_init();
+  adxl345_err_t err;
+  adxl345_data_regs_t regs;
+  adxl345_t adxl345;
+  adxl345_dev_t adxl345_dev;
+
+  err = adxl345_dev_init(&adxl345_dev, &ADXL345_0, ADXL345_I2C_PRIMARY_ADDRESS,
+                         I2C_M_SEVEN);
+  printf("adxl345_dev_init() => %d\n", err);
+  err = adxl345_init(&adxl345, &adxl345_dev);
+  printf("adxl345_init() => %d\n", err);
+
+  /* Replace with your application code */
+  slcd_sync_enable(&SEGMENT_LCD_0);
+  turn_on_segments();
+  blink_segments();
+  animation_segments();
+  display_characters();
+
+  err = adxl345_start(&adxl345);
+  printf("adxl345_start() => %d\n", err);
+
+  // Ensure that the measure bit is set...
+
+  while (1) {
+    err = adxl345_get_data_regs(&adxl345, &regs);
+    printf("regs: %d %02x%02x %02x%02x %02x%02x\n", err, regs.x1, regs.x0,
+           regs.y1, regs.y0, regs.z1, regs.z0);
+    delay_ms(500);
+  }
 }

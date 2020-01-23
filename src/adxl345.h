@@ -33,6 +33,8 @@ extern "C" {
 // =============================================================================
 // includes
 
+#include "adxl345_dev.h"
+#include "adxl345_err.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -40,47 +42,46 @@ extern "C" {
 // types and definitions
 
 typedef enum {
-  ADXL345_ERR_NONE,
-} adxl345_err_t;
-
-typedef enum {
-  ADXL345_DEVID,           ///< 0x00 00 R   11100101 Device ID
-  ADXL345_THRESH_TAP,      ///< 0x1D 29 R/W 00000000 Tap threshold
-  ADXL345_OFSX,            ///< 0x1E 30 R/W 00000000 X-axis offset
-  ADXL345_OFSY,            ///< 0x1F 31 R/W 00000000 Y-axis offset
-  ADXL345_OFSZ,            ///< 0x20 32 R/W 00000000 Z-axis offset
-  ADXL345_DUR,             ///< 0x21 33 R/W 00000000 Tap duration
-  ADXL345_LATENT,          ///< 0x22 34 R/W 00000000 Tap latency
-  ADXL345_WINDOW,          ///< 0x23 35 R/W 00000000 Tap window
-  ADXL345_THRESH_ACT,      ///< 0x24 36 R/W 00000000 Activity threshold
-  ADXL345_THRESH_INACT,    ///< 0x25 37 R/W 00000000 Inactivity threshold
-  ADXL345_TIME_INACT,      ///< 0x26 38 R/W 00000000 Inactivity time
-  ADXL345_ACT_INACT_CTL,   ///< 0x27 39 R/W 00000000 Activity control
-  ADXL345_THRESH_FF,       ///< 0x28 40 R/W 00000000 Free-fall threshold
-  ADXL345_TIME_FF,         ///< 0x29 41 R/W 00000000 Free-fall time
-  ADXL345_TAP_AXES,        ///< 0x2A 42 R/W 00000000 Axis control for tap
-  ADXL345_ACT_TAP_STATUS,  ///< 0x2B 43 R   00000000 Source of tap
-  ADXL345_BW_RATE,         ///< 0x2C 44 R/W 00001010 Data rate and power control
-  ADXL345_POWER_CTL,       ///< 0x2D 45 R/W 00000000 Power-saving features
-  ADXL345_INT_ENABLE,      ///< 0x2E 46 R/W 00000000 Interrupt enable control
-  ADXL345_INT_MAP,         ///< 0x2F 47 R/W 00000000 Interrupt mapping control
-  ADXL345_INT_SOURCE,      ///< 0x30 48 R   00000010 Source of interrupts
-  ADXL345_DATA_FORMAT,     ///< 0x31 49 R/W 00000000 Data format control
-  ADXL345_DATAX0,          ///< 0x32 50 R   00000000 X-Axis Data 0
-  ADXL345_DATAX1,          ///< 0x33 51 R   00000000 X-Axis Data 1
-  ADXL345_DATAY0,          ///< 0x34 52 R   00000000 Y-Axis Data 0
-  ADXL345_DATAY1,          ///< 0x35 53 R   00000000 Y-Axis Data 1
-  ADXL345_DATAZ0,          ///< 0x36 54 R   00000000 Z-Axis Data 0
-  ADXL345_DATAZ1,          ///< 0x37 55 R   00000000 Z-Axis Data 1
-  ADXL345_FIFO_CTL,        ///< 0x38 56 R/W 00000000 FIFO control
-  ADXL345_FIFO_STATUS      ///< 0x39 57 R   00000000 FIFO status
+  ADXL345_REG_DEVID = 0,       ///< 0x00 00 R   11100101 Device ID
+  ADXL345_REG_THRESH_TAP = 29, ///< 0x1D 29 R/W 00000000 Tap threshold
+  ADXL345_REG_OFSX,            ///< 0x1E 30 R/W 00000000 X-axis offset
+  ADXL345_REG_OFSY,            ///< 0x1F 31 R/W 00000000 Y-axis offset
+  ADXL345_REG_OFSZ,            ///< 0x20 32 R/W 00000000 Z-axis offset
+  ADXL345_REG_DUR,             ///< 0x21 33 R/W 00000000 Tap duration
+  ADXL345_REG_LATENT,          ///< 0x22 34 R/W 00000000 Tap latency
+  ADXL345_REG_WINDOW,          ///< 0x23 35 R/W 00000000 Tap window
+  ADXL345_REG_THRESH_ACT,      ///< 0x24 36 R/W 00000000 Activity threshold
+  ADXL345_REG_THRESH_INACT,    ///< 0x25 37 R/W 00000000 Inactivity threshold
+  ADXL345_REG_TIME_INACT,      ///< 0x26 38 R/W 00000000 Inactivity time
+  ADXL345_REG_ACT_INACT_CTL,   ///< 0x27 39 R/W 00000000 Activity control
+  ADXL345_REG_THRESH_FF,       ///< 0x28 40 R/W 00000000 Free-fall threshold
+  ADXL345_REG_TIME_FF,         ///< 0x29 41 R/W 00000000 Free-fall time
+  ADXL345_REG_TAP_AXES,        ///< 0x2A 42 R/W 00000000 Axis control for tap
+  ADXL345_REG_ACT_TAP_STATUS,  ///< 0x2B 43 R   00000000 Source of tap
+  ADXL345_REG_BW_RATE,         ///< 0x2C 44 R/W 00001010 Data rate and power control
+  ADXL345_REG_POWER_CTL,       ///< 0x2D 45 R/W 00000000 Power-saving features
+  ADXL345_REG_INT_ENABLE,      ///< 0x2E 46 R/W 00000000 Interrupt enable control
+  ADXL345_REG_INT_MAP,         ///< 0x2F 47 R/W 00000000 Interrupt mapping control
+  ADXL345_REG_INT_SOURCE,      ///< 0x30 48 R   00000010 Source of interrupts
+  ADXL345_REG_DATA_FORMAT,     ///< 0x31 49 R/W 00000000 Data format control
+  ADXL345_REG_DATAX0,          ///< 0x32 50 R   00000000 X-Axis Data 0
+  ADXL345_REG_DATAX1,          ///< 0x33 51 R   00000000 X-Axis Data 1
+  ADXL345_REG_DATAY0,          ///< 0x34 52 R   00000000 Y-Axis Data 0
+  ADXL345_REG_DATAY1,          ///< 0x35 53 R   00000000 Y-Axis Data 1
+  ADXL345_REG_DATAZ0,          ///< 0x36 54 R   00000000 Z-Axis Data 0
+  ADXL345_REG_DATAZ1,          ///< 0x37 55 R   00000000 Z-Axis Data 1
+  ADXL345_REG_FIFO_CTL,        ///< 0x38 56 R/W 00000000 FIFO control
+  ADXL345_REG_FIFO_STATUS      ///< 0x39 57 R   00000000 FIFO status
 } adxl345_register_t;
 
+/** Fixed device identifier */
+#define ADXL345_DEVICE_ID 0xE5
+
 /** Map raw THRESH_TAP register to g */
-#define ADXL345_THRESH_TAP_SCALE 0.0625
+#define ADXL345_REG_THRESH_TAP_SCALE 0.0625
 
 /** Map raw OFSX, OFXY, OFSZ register value to g */
-#define ADXL345_OFSx_SCALE 0.015.6
+#define ADXL345_OFSx_SCALE 0.0156
 
 /** Map raw DUR register to seconds */
 #define ADXL345_DUR_SCALE 0.000625
@@ -102,14 +103,14 @@ typedef enum {
 
 typedef enum {
   ADXL345_ACT_AC_ENABLE = 0x80,  ///< Enable AC coupling for activity detection
-  ADXL345_ACT_X_ENABLE 0x40,     ///< Enable X axis for activity detection
-  ADXL345_ACT_Y_ENABLE 0x20,     ///< Enable Y axis for activity detection
-  ADXL345_ACT_Z_ENABLE 0x10,     ///< Enable Z axis for activity detection
-  ADXL345_INACT_AC_ENABLE 0x08,  ///< Enable AC coupling for inactivity
+  ADXL345_ACT_X_ENABLE = 0x40,     ///< Enable X axis for activity detection
+  ADXL345_ACT_Y_ENABLE = 0x20,     ///< Enable Y axis for activity detection
+  ADXL345_ACT_Z_ENABLE = 0x10,     ///< Enable Z axis for activity detection
+  ADXL345_INACT_AC_ENABLE = 0x08,  ///< Enable AC coupling for inactivity
                                  ///< detect.
-  ADXL345_INACT_X_ENABLE 0x04,   ///< Enable X axis for inactivity detection
-  ADXL345_INACT_Y_ENABLE 0x01,   ///< Enable Y axis for inactivity detection
-  ADXL345_INACT_Z_ENABLE 0x01,   ///< Enable Z axis for inactivity detection
+  ADXL345_INACT_X_ENABLE = 0x04,   ///< Enable X axis for inactivity detection
+  ADXL345_INACT_Y_ENABLE = 0x01,   ///< Enable Y axis for inactivity detection
+  ADXL345_INACT_Z_ENABLE = 0x01,   ///< Enable Z axis for inactivity detection
 } adxl345_act_inact_ctl_reg;
 
 /** Map THRESH_FF register value to g */
@@ -123,7 +124,7 @@ typedef enum {
                                        ///< accel is greater than THRESH_TAP
   ADXL345_TAP_X_ENABLE = 0x04,         ///< Enable tap detection on X axis
   ADXL345_TAP_Y_ENABLE = 0x02,         ///< Enable tap detection on Y axis
-  ADXL345_TAP_Y_ENABLE = 0x01,         ///< Enable tap detection on Z axis
+  ADXL345_TAP_Z_ENABLE = 0x01,         ///< Enable tap detection on Z axis
 } adxl345_tap_axes_reg;
 
 typedef enum {
@@ -210,6 +211,7 @@ typedef struct {
 } adxl345_sample_t;
 
 typedef struct {
+  adxl345_dev_t *dev;
 } adxl345_t;
 
 // =============================================================================
@@ -218,187 +220,143 @@ typedef struct {
 /**
  * @brief initialize the adxl345 module.
  */
-adxl345_t *adxl345_init(adxl345_t *adxl345);
-
-/**
- * @brief  Reset the adxl345.
- */
-adxl345_t *adxl345_reset(adxl345_t *adxl345);
+adxl345_err_t adxl345_init(adxl345_t *adxl345, adxl345_dev_t * dev);
 
 // ==========================================
 // low-level register access
 
-adxl345_err_t adxl345_get_devid_reg(uint8_t *val);
+adxl345_err_t adxl345_get_devid_reg(adxl345_t *adxl345, uint8_t *val);
 
-adxl345_err_t adxl345_get_thresh_tap_reg(uint8_t *val);
-adxl345_err_t adxl345_set_thresh_tap_reg(uint8_t val);
+adxl345_err_t adxl345_get_thresh_tap_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_thresh_tap_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_ofsx_reg(uint8_t *val);
-adxl345_err_t adxl345_set_ofsx_reg(uint8_t val);
+adxl345_err_t adxl345_get_ofsx_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_ofsx_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_ofsy_reg(uint8_t *val);
-adxl345_err_t adxl345_set_ofsy_reg(uint8_t val);
+adxl345_err_t adxl345_get_ofsy_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_ofsy_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_ofsz_reg(uint8_t *val);
-adxl345_err_t adxl345_set_ofsz_reg(uint8_t val);
+adxl345_err_t adxl345_get_ofsz_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_ofsz_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_dur_reg(uint8_t *val);
-adxl345_err_t adxl345_set_dur_reg(uint8_t val);
+adxl345_err_t adxl345_get_dur_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_dur_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_latency_reg(uint8_t *val);
-adxl345_err_t adxl345_set_latency_reg(uint8_t val);
+adxl345_err_t adxl345_get_latency_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_latency_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_window_reg(uint8_t *val);
-adxl345_err_t adxl345_set_window_reg(uint8_t val);
+adxl345_err_t adxl345_get_window_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_window_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_thresh_act_reg(uint8_t *val);
-adxl345_err_t adxl345_set_thresh_act_reg(uint8_t val);
+adxl345_err_t adxl345_get_thresh_act_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_thresh_act_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_thresh_inact_reg(uint8_t *val);
-adxl345_err_t adxl345_set_thresh_inact_reg(uint8_t val);
+adxl345_err_t adxl345_get_thresh_inact_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_thresh_inact_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_time_inact_reg(uint8_t *val);
-adxl345_err_t adxl345_set_time_inact_reg(uint8_t val);
+adxl345_err_t adxl345_get_time_inact_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_time_inact_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_act_inact_ctl_reg(adxl345_act_inact_ctl_reg *val);
-adxl345_err_t adxl345_set_act_inact_ctl_reg(adxl345_act_inact_ctl_reg val);
+adxl345_err_t adxl345_get_act_inact_ctl_reg(adxl345_t *adxl345, adxl345_act_inact_ctl_reg *val);
+adxl345_err_t adxl345_set_act_inact_ctl_reg(adxl345_t *adxl345, adxl345_act_inact_ctl_reg val);
 
-adxl345_err_t adxl345_get_thresh_ff_reg(uint8_t *val);
-adxl345_err_t adxl345_set_thresh_ff_reg(uint8_t val);
+adxl345_err_t adxl345_get_thresh_ff_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_thresh_ff_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_get_time_ff_reg(uint8_t *val);
-adxl345_err_t adxl345_set_time_ff_reg(uint8_t val);
+adxl345_err_t adxl345_get_time_ff_reg(adxl345_t *adxl345, uint8_t *val);
+adxl345_err_t adxl345_set_time_ff_reg(adxl345_t *adxl345, uint8_t val);
 
-adxl345_err_t adxl345_tap_axes_reg(adxl345_tap_axes_reg *val);
-adxl345_err_t adxl345_set_tap_axes_reg(adxl345_tap_axes_reg val);
+adxl345_err_t adxl345_get_tap_axes_reg(adxl345_t *adxl345, adxl345_tap_axes_reg *val);
+adxl345_err_t adxl345_set_tap_axes_reg(adxl345_t *adxl345, adxl345_tap_axes_reg val);
 
-adxl345_err_t adxl345_get_bw_rate_reg(adxl345_bw_rate_reg *val);
-adxl345_err_t adxl345_set_bw_rate_reg(adxl345_bw_rate_reg val);
+adxl345_err_t adxl345_get_bw_rate_reg(adxl345_t *adxl345, adxl345_bw_rate_reg *val);
+adxl345_err_t adxl345_set_bw_rate_reg(adxl345_t *adxl345, adxl345_bw_rate_reg val);
 
-adxl345_err_t adxl345_get_power_ctl_reg(adxl345_power_ctl_reg *val);
-adxl345_err_t adxl345_set_power_ctl_reg(adxl345_power_ctl_reg val);
+adxl345_err_t adxl345_get_power_ctl_reg(adxl345_t *adxl345, adxl345_power_ctl_reg *val);
+adxl345_err_t adxl345_set_power_ctl_reg(adxl345_t *adxl345, adxl345_power_ctl_reg val);
 
-adxl345_err_t adxl345_get_int_enable_reg(adxl345_interrupt_reg *val);
-adxl345_err_t adxl345_set_int_enable_reg(adxl345_interrupt_reg val);
+adxl345_err_t adxl345_get_int_enable_reg(adxl345_t *adxl345, adxl345_interrupt_reg *val);
+adxl345_err_t adxl345_set_int_enable_reg(adxl345_t *adxl345, adxl345_interrupt_reg val);
 
-adxl345_err_t adxl345_get_int_map_reg(adxl345_interrupt_reg *val);
-adxl345_err_t adxl345_set_int_map_reg(adxl345_interrupt_reg val);
+adxl345_err_t adxl345_get_int_map_reg(adxl345_t *adxl345, adxl345_interrupt_reg *val);
+adxl345_err_t adxl345_set_int_map_reg(adxl345_t *adxl345, adxl345_interrupt_reg val);
 
-adxl345_err_t adxl345_get_int_source_reg(adxl345_interrupt_reg *val);
+adxl345_err_t adxl345_get_int_source_reg(adxl345_t *adxl345, adxl345_interrupt_reg *val);
 
-adxl345_err_t adxl345_get_data_format_reg(adxl345_data_format_reg *val);
-adxl345_err_t adxl345_set_data_format_reg(adxl345_data_format_reg val);
+adxl345_err_t adxl345_get_data_format_reg(adxl345_t *adxl345, adxl345_data_format_reg *val);
+adxl345_err_t adxl345_set_data_format_reg(adxl345_t *adxl345, adxl345_data_format_reg val);
 
 // Because x, y, z samples must be read in a multi-register read,
 // these methods are not provided.
-// adxl345_err_t adxl345_get_datax0_reg(uint8_t *val);
-// adxl345_err_t adxl345_get_datax1_reg(uint8_t *val);
-// adxl345_err_t adxl345_get_datay0_reg(uint8_t *val);
-// adxl345_err_t adxl345_get_datay1_reg(uint8_t *val);
-// adxl345_err_t adxl345_get_dataz0_reg(uint8_t *val);
-// adxl345_err_t adxl345_get_dataz1_reg(uint8_t *val);
+// adxl345_err_t adxl345_get_datax0_reg(adxl345_t *adxl345, uint8_t *val);
+// adxl345_err_t adxl345_get_datax1_reg(adxl345_t *adxl345, uint8_t *val);
+// adxl345_err_t adxl345_get_datay0_reg(adxl345_t *adxl345, uint8_t *val);
+// adxl345_err_t adxl345_get_datay1_reg(adxl345_t *adxl345, uint8_t *val);
+// adxl345_err_t adxl345_get_dataz0_reg(adxl345_t *adxl345, uint8_t *val);
+// adxl345_err_t adxl345_get_dataz1_reg(adxl345_t *adxl345, uint8_t *val);
 
 /** @brief Fetch x, y, z accelerometer data in one operation
  */
-adxl345_err_t adxl345_get_data_regs(adxl345_data_regs_t *dst);
+adxl345_err_t adxl345_get_data_regs(adxl345_t *adxl345, adxl345_data_regs_t *dst);
 
-adxl345_err_t adxl345_get_fifo_ctl_reg(adxl345_fifo_mode_reg *val);
-adxl345_err_t adxl345_set_fifo_ctl_reg(adxl345_fifo_mode_reg val);
+adxl345_err_t adxl345_get_fifo_ctl_reg(adxl345_t *adxl345, adxl345_fifo_mode_reg *val);
+adxl345_err_t adxl345_set_fifo_ctl_reg(adxl345_t *adxl345, adxl345_fifo_mode_reg val);
 
-adxl345_err_t adxl345_get_fifo_status_reg(adxl345_fifo_status_reg *val);
+adxl345_err_t adxl345_get_fifo_status_reg(adxl345_t *adxl345, adxl345_fifo_status_reg *val);
 
 // ==========================================
 // higher level functions.  In the functions below,
 // _g stands for gravity and _s stands for seconds.
 
-adxl345_err_t adxl345_get_tap_thresh_g(float *val);
-adxl345_err_t adxl345_set_tap_thresh_g(float val);
+/** @brief Enter measurement mode: start measuring */
+adxl345_err_t adxl345_start(adxl345_t *adxl345);
 
-adxl345_err_t adxl345_get_ofsx_g(float *val);
-adxl345_err_t adxl345_set_ofsx_g(float val);
+/** @brief Enter standby mode: stop measuring */
+adxl345_err_t adxl345_stop(adxl345_t *adxl345);
 
-adxl345_err_t adxl345_get_ofsy_g(float *val);
-adxl345_err_t adxl345_set_ofsy_g(float val);
+adxl345_err_t adxl345_get_tap_thresh_g(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_tap_thresh_g(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_get_ofsz_g(float *val);
-adxl345_err_t adxl345_set_ofsz_g(float val);
+adxl345_err_t adxl345_get_ofsx_g(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_ofsx_g(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_get_dur_g(float *val);
-adxl345_err_t adxl345_set_dur_g(float val);
+adxl345_err_t adxl345_get_ofsy_g(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_ofsy_g(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_get_latency_s(float *val);
-adxl345_err_t adxl345_set_latency_s(float val);
+adxl345_err_t adxl345_get_ofsz_g(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_ofsz_g(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_get_window_s(float *val);
-adxl345_err_t adxl345_set_window_s(float val);
+adxl345_err_t adxl345_get_dur_g(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_dur_g(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_get_thresh_act_g(float *val);
-adxl345_err_t adxl345_set_thresh_act_g(float val);
+adxl345_err_t adxl345_get_latency_s(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_latency_s(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_get_thresh_inact_g(float *val);
-adxl345_err_t adxl345_set_thresh_inact_g(float val);
+adxl345_err_t adxl345_get_window_s(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_window_s(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_get_time_inact_s(float *val);
-adxl345_err_t adxl345_set_time_inact_s(float val);
+adxl345_err_t adxl345_get_thresh_act_g(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_thresh_act_g(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_get_thresh_ff_g(float *val);
-adxl345_err_t adxl345_set_thresh_ff_g(float val);
+adxl345_err_t adxl345_get_thresh_inact_g(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_thresh_inact_g(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_get_time_ff_s(float *val);
-adxl345_err_t adxl345_set_time_ff_s(float val);
+adxl345_err_t adxl345_get_time_inact_s(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_time_inact_s(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_sample_is_available(bool *val);
+adxl345_err_t adxl345_get_thresh_ff_g(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_thresh_ff_g(adxl345_t *adxl345, float val);
+
+adxl345_err_t adxl345_get_time_ff_s(adxl345_t *adxl345, float *val);
+adxl345_err_t adxl345_set_time_ff_s(adxl345_t *adxl345, float val);
+
+adxl345_err_t adxl345_sample_is_available(adxl345_t *adxl345, bool *val);
 
 /** @brief Read an x, y, z sample frame.
  */
-adxl345_err_t adxl345_get_sample(adxl345_sample_t *sample);
+adxl345_err_t adxl345_get_sample(adxl345_t *adxl345, adxl345_sample_t *sample);
 
-adxl345_err_t adxl345_get_samples(adxl345_sample_t *samples, int num_samples);
-
-// ============================================
-// low-level I/O
-
-/** @brief Read one ADXL345 register.
- *
- * @param addr Address of register to be read
- * @param dst Pointer to destination buffer.
- *
- * @return 0 on success, non-zero on error.
- */
-adxl345_err_t adxl345_read_reg(uint8_t saddr, uint8_t *dst);
-
-/** @brief Write one ADXL345 register.
- *
- * @param addr Address of register to be written.
- * @param val Value to be written.
- *
- * @return 0 on success, non-zero on error.
- */
-adxl345_err_t adxl345_write_reg(uint8_t addr, uint8_t val);
-
-/** @brief Read multiple registers from the ADXL345.
- *
- * Read one or more consecutive registers in a single I/O operation
- *
- * @param start_addr Address of first register to be read
- * @param dst Pointer to destination buffer.  Must have capacity of n_bytes.
- * @param n_bytes Number of registers to be read.
- *
- * @return 0 on success, non-zero on error.
- */
-adxl345_err_t adxl345_read_regs(uint8_t start_addr, uint8_t *dst, uint8_t n_bytes);
-
-/** @brief Write multiple registers to the ADXL345.
- *
- * Write one or more consecutive registers in a single I/O operation
- *
- * @param start_addr Address of first register to be written.
- * @param src Pointer to source data.  Must have capacity of n_bytes.
- * @param n_bytes Number of registers to be written.
- *
- * @return 0 on success, non-zero on error.
- */
-adxl345_err_t adxl345_write_regs(uint8_t start_addr, uint8_t *src, uint8_t n_bytes);
+adxl345_err_t adxl345_get_samples(adxl345_t *adxl345, adxl345_sample_t *samples, int num_samples);
 
 #ifdef __cplusplus
 }

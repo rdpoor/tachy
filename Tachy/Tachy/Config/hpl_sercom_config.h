@@ -278,7 +278,7 @@
 // <e> Advanced
 // <id> i2c_master_advanced
 #ifndef CONF_SERCOM_1_I2CM_ADVANCED_CONFIG
-#define CONF_SERCOM_1_I2CM_ADVANCED_CONFIG 0
+#define CONF_SERCOM_1_I2CM_ADVANCED_CONFIG 1
 #endif
 
 // <o> TRise (ns) <0-300>

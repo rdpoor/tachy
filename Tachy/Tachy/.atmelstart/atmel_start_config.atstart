@@ -1,5 +1,5 @@
 format_version: '2'
-name: Tachy
+name: SLCD Example
 versions:
   api: '1.0'
   backend: 1.7.279
@@ -36,10 +36,10 @@ middlewares:
     api: QTouch:Driver:Timer
     dependencies:
       Timer: Timer
-  QTOUCH_NODE:
-    user_label: QTOUCH_NODE
+  QTOUCH_NODE_1:
+    user_label: QTOUCH_NODE_1
     configuration:
-      order: 0
+      order: 2
       ptc_analog_gain: '1'
       ptc_csd: 0
       ptc_digital_gain: '1'
@@ -51,8 +51,8 @@ middlewares:
     api: QTouch:General:Node
     dependencies:
       QTouch Acquisition: QTOUCH_ACQUISITION
-      Y-line: PTC:Y/21
-      X-line: PTC:X/20
+      Y-line: PTC:Y/11
+      X-line: PTC:X/12
       PTC: PTC
   QTOUCH_NODE_0:
     user_label: QTOUCH_NODE_0
@@ -72,10 +72,10 @@ middlewares:
       Y-line: PTC:Y/21
       X-line: PTC:X/12
       PTC: PTC
-  QTOUCH_NODE_1:
-    user_label: QTOUCH_NODE_1
+  QTOUCH_NODE:
+    user_label: QTOUCH_NODE
     configuration:
-      order: 2
+      order: 0
       ptc_analog_gain: '1'
       ptc_csd: 0
       ptc_digital_gain: '1'
@@ -87,8 +87,8 @@ middlewares:
     api: QTouch:General:Node
     dependencies:
       QTouch Acquisition: QTOUCH_ACQUISITION
-      Y-line: PTC:Y/11
-      X-line: PTC:X/12
+      Y-line: PTC:Y/21
+      X-line: PTC:X/20
       PTC: PTC
   QTOUCH_NODE_2:
     user_label: QTOUCH_NODE_2
@@ -142,22 +142,6 @@ middlewares:
     functionality: QTouch_Sensor
     api: QTouch:General:Sensor
     dependencies: {}
-  QTOUCH_BUTTON:
-    user_label: QTOUCH_BUTTON
-    configuration:
-      order: 0
-      radius: 30
-      touch_sensor_aks: AKS Group 1
-      touch_sensor_hysterisis: 25 percent of Sensor Threshold
-      touch_sensor_threshold: 20
-      x_position: 50
-      y_position: 50
-    definition: Atmel:QTOUCH_SAM_L22:1.0.0::QTouch_Key
-    functionality: QTouch_Key
-    api: QTouch:General:Key
-    dependencies:
-      QTouch Sensor: QTOUCH_SENSOR
-      QTouch Node: QTOUCH_NODE
   QTOUCH_BUTTON_0:
     user_label: QTOUCH_BUTTON_0
     configuration:
@@ -174,38 +158,22 @@ middlewares:
     dependencies:
       QTouch Sensor: QTOUCH_SENSOR
       QTouch Node: QTOUCH_NODE_0
-  QTOUCH_BUTTON_1:
-    user_label: QTOUCH_BUTTON_1
+  QTOUCH_BUTTON:
+    user_label: QTOUCH_BUTTON
     configuration:
-      order: 2
+      order: 0
       radius: 30
       touch_sensor_aks: AKS Group 1
       touch_sensor_hysterisis: 25 percent of Sensor Threshold
       touch_sensor_threshold: 20
-      x_position: 210
+      x_position: 50
       y_position: 50
     definition: Atmel:QTOUCH_SAM_L22:1.0.0::QTouch_Key
     functionality: QTouch_Key
     api: QTouch:General:Key
     dependencies:
       QTouch Sensor: QTOUCH_SENSOR
-      QTouch Node: QTOUCH_NODE_1
-  QTOUCH_BUTTON_2:
-    user_label: QTOUCH_BUTTON_2
-    configuration:
-      order: 3
-      radius: 30
-      touch_sensor_aks: AKS Group 1
-      touch_sensor_hysterisis: 25 percent of Sensor Threshold
-      touch_sensor_threshold: 20
-      x_position: 290
-      y_position: 50
-    definition: Atmel:QTOUCH_SAM_L22:1.0.0::QTouch_Key
-    functionality: QTouch_Key
-    api: QTouch:General:Key
-    dependencies:
-      QTouch Sensor: QTOUCH_SENSOR
-      QTouch Node: QTOUCH_NODE_2
+      QTouch Node: QTOUCH_NODE
   QTOUCH_BUTTON_3:
     user_label: QTOUCH_BUTTON_3
     configuration:
@@ -222,6 +190,38 @@ middlewares:
     dependencies:
       QTouch Sensor: QTOUCH_SENSOR
       QTouch Node: QTOUCH_NODE_3
+  QTOUCH_BUTTON_2:
+    user_label: QTOUCH_BUTTON_2
+    configuration:
+      order: 3
+      radius: 30
+      touch_sensor_aks: AKS Group 1
+      touch_sensor_hysterisis: 25 percent of Sensor Threshold
+      touch_sensor_threshold: 20
+      x_position: 290
+      y_position: 50
+    definition: Atmel:QTOUCH_SAM_L22:1.0.0::QTouch_Key
+    functionality: QTouch_Key
+    api: QTouch:General:Key
+    dependencies:
+      QTouch Sensor: QTOUCH_SENSOR
+      QTouch Node: QTOUCH_NODE_2
+  QTOUCH_BUTTON_1:
+    user_label: QTOUCH_BUTTON_1
+    configuration:
+      order: 2
+      radius: 30
+      touch_sensor_aks: AKS Group 1
+      touch_sensor_hysterisis: 25 percent of Sensor Threshold
+      touch_sensor_threshold: 20
+      x_position: 210
+      y_position: 50
+    definition: Atmel:QTOUCH_SAM_L22:1.0.0::QTouch_Key
+    functionality: QTouch_Key
+    api: QTouch:General:Key
+    dependencies:
+      QTouch Sensor: QTOUCH_SENSOR
+      QTouch Node: QTOUCH_NODE_1
   QTOUCH_BINDING:
     user_label: QTOUCH_BINDING
     configuration: {}
@@ -897,7 +897,7 @@ drivers:
     functionality: I2C
     api: HAL:Driver:I2C_Master_Sync
     configuration:
-      i2c_master_advanced: false
+      i2c_master_advanced: true
       i2c_master_arch_dbgstop: Keep running
       i2c_master_arch_inactout: Disabled
       i2c_master_arch_lowtout: false
@@ -1722,11 +1722,13 @@ pads:
     definition: Atmel:SAML22_Drivers:0.0.1::SAML22N18A-AU::pad::PB30
     mode: I2C
     user_label: PB30
-    configuration: null
+    configuration:
+      pad_pull_config: Pull-up
   PB31:
     name: PB31
     definition: Atmel:SAML22_Drivers:0.0.1::SAML22N18A-AU::pad::PB31
     mode: I2C
     user_label: PB31
-    configuration: null
+    configuration:
+      pad_pull_config: Pull-up
 toolchain_options: []

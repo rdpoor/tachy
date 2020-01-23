@@ -30,15 +30,15 @@
     <EraseKey />
     <AsfFrameworkConfig>
       <framework-data xmlns="">
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.40.0" />
-  </dependencies>
-</framework-data>
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.40.0" />
+        </dependencies>
+      </framework-data>
     </AsfFrameworkConfig>
     <atStartFilePath>.atmelstart\atmel_start_config.atstart</atStartFilePath>
     <GpdscFilePath>.atmelstart\AtmelStart.gpdsc</GpdscFilePath>
@@ -269,6 +269,7 @@
   <armgcc.linker.libraries.LibrarySearchPaths>
     <ListValues>
       <Value>..\qtouch\lib\gcc</Value>
+      <Value>..\qtouch\lib\gcc</Value>
       <Value>%24(ProjectDir)\Device_Startup</Value>
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
@@ -347,6 +348,8 @@
   <armgcc.compiler.directories.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.4.0\CMSIS\Core\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAML22_DFP\1.2.77\include</Value>
+      <Value>../../../src</Value>
       <Value>../Config</Value>
       <Value>../</Value>
       <Value>../examples</Value>
@@ -368,7 +371,6 @@
       <Value>../qtouch</Value>
       <Value>../qtouch/include</Value>
       <Value>../stdio_redirect</Value>
-      <Value>%24(PackRepoDir)\atmel\SAML22_DFP\1.2.77\include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
@@ -388,13 +390,16 @@
     <ListValues>
       <Value>..\qtouch\lib\gcc</Value>
       <Value>%24(ProjectDir)\Device_Startup</Value>
+      <Value>../qtouch/lib/gcc</Value>
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM />
   <armgcc.linker.miscellaneous.LinkerFlags>-Tsaml22n18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.4.0\CMSIS\Core\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAML22_DFP\1.2.77\include</Value>
       <Value>../Config</Value>
       <Value>../</Value>
       <Value>../examples</Value>
@@ -416,13 +421,13 @@
       <Value>../qtouch</Value>
       <Value>../qtouch/include</Value>
       <Value>../stdio_redirect</Value>
-      <Value>%24(PackRepoDir)\atmel\SAML22_DFP\1.2.77\include</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
   <armgcc.preprocessingassembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.4.0\CMSIS\Core\Include\</Value>
+      <Value>%24(PackRepoDir)\atmel\SAML22_DFP\1.2.77\include</Value>
       <Value>../Config</Value>
       <Value>../</Value>
       <Value>../examples</Value>
@@ -444,7 +449,6 @@
       <Value>../qtouch</Value>
       <Value>../qtouch/include</Value>
       <Value>../stdio_redirect</Value>
-      <Value>%24(PackRepoDir)\atmel\SAML22_DFP\1.2.77\include</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -452,6 +456,26 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\src\adxl345.c">
+      <SubType>compile</SubType>
+      <Link>adxl345.c</Link>
+    </Compile>
+    <Compile Include="..\..\src\adxl345.h">
+      <SubType>compile</SubType>
+      <Link>adxl345.h</Link>
+    </Compile>
+    <Compile Include="..\..\src\adxl345_dev.c">
+      <SubType>compile</SubType>
+      <Link>adxl345_dev.c</Link>
+    </Compile>
+    <Compile Include="..\..\src\adxl345_dev.h">
+      <SubType>compile</SubType>
+      <Link>adxl345_dev.h</Link>
+    </Compile>
+    <Compile Include="..\..\src\adxl345_err.h">
+      <SubType>compile</SubType>
+      <Link>adxl345_err.h</Link>
+    </Compile>
     <Compile Include="atmel_start.c">
       <SubType>compile</SubType>
     </Compile>

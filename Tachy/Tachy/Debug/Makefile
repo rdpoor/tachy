@@ -591,7 +591,7 @@ all: $(OUTPUT_FILE_PATH) $(ADDITIONAL_DEPENDENCIES)
 $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP) $(LIB_DEP) $(LINKER_SCRIPT_DEP)
 	@echo Building target: $@
 	@echo Invoking: ARM/GNU Linker : 6.3.1
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -mthumb -Wl,-Map="Tachy.map" --specs=nano.specs -Wl,--start-group -lqtm_touch_key_cm0p_0x0002 -lqtm_binding_layer_cm0p_0x0005 -lqtm_acq_saml22_0x0028 -lm  -Wl,--end-group -L"..\qtouch\lib\gcc" -L"..\\Device_Startup" -L"../qtouch/lib/gcc"  -Wl,--gc-sections -mcpu=cortex-m0plus -Tsaml22n18a_flash.ld  
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -mthumb -Wl,-Map="Tachy.map" -Wl,--start-group -lqtm_touch_key_cm0p_0x0002 -lqtm_binding_layer_cm0p_0x0005 -lqtm_acq_saml22_0x0028 -lm  -Wl,--end-group -L"..\qtouch\lib\gcc" -L"..\\Device_Startup" -L"../qtouch/lib/gcc"  -Wl,--gc-sections -mcpu=cortex-m0plus -Tsaml22n18a_flash.ld -u _print_float   
 	@echo Finished building target: $@
 	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-objcopy.exe" -O binary "Tachy.elf" "Tachy.bin"
 	"C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\arm\arm-gnu-toolchain\bin\arm-none-eabi-objcopy.exe" -O ihex -R .eeprom -R .fuse -R .lock -R .signature  "Tachy.elf" "Tachy.hex"

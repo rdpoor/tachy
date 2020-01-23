@@ -101,6 +101,9 @@ typedef enum {
 /** Map raw TIME_INACT register to seconds */
 #define ADXL345_TIME_INACT_SCALE 1.0
 
+/** 2 / 2^9 */
+#define ADXL345_2G_SCALE 0.00390625
+
 typedef enum {
   ADXL345_ACT_AC_ENABLE = 0x80,  ///< Enable AC coupling for activity detection
   ADXL345_ACT_X_ENABLE = 0x40,     ///< Enable X axis for activity detection

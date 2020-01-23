@@ -326,7 +326,23 @@ adxl345_err_t adxl345_sample_is_available(adxl345_t *adxl345, bool *val);
 
 /** @brief Read an x, y, z sample frame.
  */
-adxl345_err_t adxl345_get_sample(adxl345_t *adxl345, adxl345_sample_t *sample);
+adxl345_err_t adxl345_get_sample(adxl345_t *adxl345, adxl345_sample_t *sample) {
+  adxl345_data_regs_t regs;
+  adxl345_err_t err;
+
+  err = adxl345_get_data_regs(adxl345, &regs);
+  if (err != ADXL345_ERR_NONE) return err;
+
+  // Using default values:
+  //   x1:x0 is a 16 bit signed value with 10 bits of resolution.
+  //   Full scale is 2^9 = 512 corresponding to 2g
+  //   This can change with sensitivity settings, packing mode, etc.
+  sample->x = (int16_t)((regs.x1 << 8) | regs.x0) * ADXL345_2G_SCALE;
+  sample->y = (int16_t)((regs.y1 << 8) | regs.y0) * ADXL345_2G_SCALE;
+  sample->z = (int16_t)((regs.z1 << 8) | regs.z0) * ADXL345_2G_SCALE;
+
+  return ADXL345_ERR_NONE;
+}
 
 adxl345_err_t adxl345_get_samples(adxl345_t *adxl345, adxl345_sample_t *samples, int num_samples);
 

@@ -129,7 +129,7 @@ static void display_characters(void) {
 int main(void) {
   atmel_start_init();
   adxl345_err_t err;
-  adxl345_data_regs_t regs;
+  adxl345_sample_t sample;
   adxl345_t adxl345;
   adxl345_dev_t adxl345_dev;
 
@@ -152,9 +152,8 @@ int main(void) {
   // Ensure that the measure bit is set...
 
   while (1) {
-    err = adxl345_get_data_regs(&adxl345, &regs);
-    printf("regs: %d %02x%02x %02x%02x %02x%02x\n", err, regs.x1, regs.x0,
-           regs.y1, regs.y0, regs.z1, regs.z0);
-    delay_ms(500);
+    err = adxl345_get_sample(&adxl345, &sample);
+    printf("err: %d x=%6f, y=%6f, z=%6f\n", err, sample.x, sample.y, sample.z);
+    delay_ms(250);
   }
 }

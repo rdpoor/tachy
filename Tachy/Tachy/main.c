@@ -41,6 +41,9 @@
 #include "atmel_start.h"
 #include "atmel_start_pins.h"
 
+// =============================================================================
+// definitions and typedefs
+
 /* Logo */
 #define TSLCD_SEG_B0 SLCD_SEGID(1, 0)
 #define TSLCD_SEG_B1 SLCD_SEGID(2, 0)
@@ -80,10 +83,71 @@
 #define TSLCD_SEG_BT2 SLCD_SEGID(5, 2)
 #define TSLCD_SEG_BT3 SLCD_SEGID(5, 3)
 
+// =============================================================================
+// local declarations
+
 static void turn_on_segments(void);
 static void blink_segments(void);
 static void animation_segments(void);
 static void display_characters(void);
+
+void process_samples(adxl345_t *adxl345);
+void process_sample(adxl345_t *adxl345);
+
+// =============================================================================
+// local storage
+
+static uint8_t s_high_water;
+static uint32_t s_samples_read;
+static float s_total_x;
+
+// =============================================================================
+// main code
+
+int main(void) {
+  atmel_start_init();
+  adxl345_err_t err;
+  adxl345_t adxl345;
+  adxl345_dev_t adxl345_dev;
+
+  /* Replace with your application code */
+  slcd_sync_enable(&SEGMENT_LCD_0);
+  turn_on_segments();
+  blink_segments();
+  animation_segments();
+  display_characters();
+
+  err = adxl345_dev_init(&adxl345_dev, &ADXL345_0, ADXL345_I2C_PRIMARY_ADDRESS,
+                         I2C_M_SEVEN);
+  printf("adxl345_dev_init() => %d\n", err);
+  err = adxl345_init(&adxl345, &adxl345_dev);
+  printf("adxl345_init() => %d\n", err);
+  err = adxl345_stop(&adxl345);
+  printf("adxl345_stop() => %d\n", err);
+
+
+  // Configure ADXL345: 100 Hz, FIFO enabled, water mark = 1 sample
+  err = adxl345_set_bw_rate_reg(&adxl345, ADXL345_RATE_400);
+  printf("adxl345_set_bw_rate_reg() => %d\n", err);
+  err = adxl345_set_fifo_ctl_reg(&adxl345, ADXL345_FIFO_MODE_ENABLE | 1);
+  printf("adxl345_set_fifo_ctl_reg() => %d\n", err);
+
+  err = adxl345_start(&adxl345);
+  printf("adxl345_start() => %d\n", err);
+
+  // Ensure that the measure bit is set...
+
+  s_high_water = 0;
+  s_samples_read = 0;
+  s_total_x = 0.0;
+  while (1) {
+    process_samples(&adxl345);
+    printf("%d %5ld %f\n", s_high_water, s_samples_read, s_total_x);
+  }
+}
+
+// =============================================================================
+// local functions
 
 static void turn_on_segments(void) {
   slcd_sync_seg_on(&SEGMENT_LCD_0, TSLCD_SEG_N0);
@@ -126,34 +190,26 @@ static void display_characters(void) {
   slcd_sync_write_string(&SEGMENT_LCD_0, (uint8_t *)"abcdefgh", 8, 5);
 }
 
-int main(void) {
-  atmel_start_init();
-  adxl345_err_t err;
-  adxl345_sample_t sample;
-  adxl345_t adxl345;
-  adxl345_dev_t adxl345_dev;
 
-  err = adxl345_dev_init(&adxl345_dev, &ADXL345_0, ADXL345_I2C_PRIMARY_ADDRESS,
-                         I2C_M_SEVEN);
-  printf("adxl345_dev_init() => %d\n", err);
-  err = adxl345_init(&adxl345, &adxl345_dev);
-  printf("adxl345_init() => %d\n", err);
+void process_samples(adxl345_t *adxl345) {
+  uint8_t reg, available;
+  // adxl345_err_t err;
 
-  /* Replace with your application code */
-  slcd_sync_enable(&SEGMENT_LCD_0);
-  turn_on_segments();
-  blink_segments();
-  animation_segments();
-  display_characters();
-
-  err = adxl345_start(&adxl345);
-  printf("adxl345_start() => %d\n", err);
-
-  // Ensure that the measure bit is set...
-
-  while (1) {
-    err = adxl345_get_sample(&adxl345, &sample);
-    printf("err: %d x=%6f, y=%6f, z=%6f\n", err, sample.x, sample.y, sample.z);
-    delay_ms(250);
+  // Read FIFO status register to find how many samples ara available
+  adxl345_get_fifo_status_reg(adxl345, &reg);
+  available = reg & 0x1f;
+  // note high water mark
+  if (available > s_high_water) s_high_water = available;
+  for (int i = 0; i < available; i++) {
+    process_sample(adxl345);
   }
+}
+
+void process_sample(adxl345_t *adxl345) {
+  adxl345_sample_t sample;
+  // adxl345_err_t err;
+
+  adxl345_get_sample(adxl345, &sample);
+  s_samples_read += 1;
+  s_total_x += sample.x;
 }

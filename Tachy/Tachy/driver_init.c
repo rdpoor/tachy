@@ -185,6 +185,20 @@ void system_init(void)
 {
 	init_mcu();
 
+	// GPIO on PC03
+
+	gpio_set_pin_level(TEST_PIN,
+	                   // <y> Initial level
+	                   // <id> pad_initial_level
+	                   // <false"> Low
+	                   // <true"> High
+	                   false);
+
+	// Set pin direction to output
+	gpio_set_pin_direction(TEST_PIN, GPIO_DIRECTION_OUT);
+
+	gpio_set_pin_function(TEST_PIN, GPIO_PIN_FUNCTION_OFF);
+
 	Timer_init();
 
 	EDBG_0_init();

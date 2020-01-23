@@ -270,6 +270,8 @@
     <ListValues>
       <Value>..\qtouch\lib\gcc</Value>
       <Value>..\qtouch\lib\gcc</Value>
+      <Value>..\qtouch\lib\gcc</Value>
+      <Value>..\qtouch\lib\gcc</Value>
       <Value>%24(ProjectDir)\Device_Startup</Value>
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
@@ -348,8 +350,8 @@
   <armgcc.compiler.directories.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.4.0\CMSIS\Core\Include\</Value>
-      <Value>%24(PackRepoDir)\atmel\SAML22_DFP\1.2.77\include</Value>
       <Value>../../../src</Value>
+      <Value>%24(PackRepoDir)\atmel\SAML22_DFP\1.2.77\include</Value>
       <Value>../Config</Value>
       <Value>../</Value>
       <Value>../examples</Value>
@@ -387,6 +389,7 @@
   </armgcc.linker.libraries.Libraries>
   <armgcc.linker.libraries.LibrarySearchPaths>
     <ListValues>
+      <Value>..\qtouch\lib\gcc</Value>
       <Value>..\qtouch\lib\gcc</Value>
       <Value>%24(ProjectDir)\Device_Startup</Value>
       <Value>../qtouch/lib/gcc</Value>

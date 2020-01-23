@@ -1483,6 +1483,12 @@ drivers:
         configuration:
           ptc_gclk_selection: Generic clock generator 1
 pads:
+  TEST_PIN:
+    name: PC03
+    definition: Atmel:SAML22_Drivers:0.0.1::SAML22N18A-AU::pad::PC03
+    mode: Digital output
+    user_label: TEST_PIN
+    configuration: null
   PB05:
     name: PB05
     definition: Atmel:SAML22_Drivers:0.0.1::SAML22N18A-AU::pad::PB05

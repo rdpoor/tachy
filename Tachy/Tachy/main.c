@@ -83,6 +83,8 @@
 #define TSLCD_SEG_BT2 SLCD_SEGID(5, 2)
 #define TSLCD_SEG_BT3 SLCD_SEGID(5, 3)
 
+#define WINDOW_SIZE 256
+
 // =============================================================================
 // local declarations
 
@@ -91,8 +93,11 @@ static void blink_segments(void);
 static void animation_segments(void);
 static void display_characters(void);
 
-void process_samples(adxl345_t *adxl345);
-void process_sample(adxl345_t *adxl345);
+static void process_samples(adxl345_t *adxl345);
+static void process_sample(adxl345_t *adxl345);
+
+static int32_t dummy_autoc();
+static void set_test_pin(bool val);
 
 // =============================================================================
 // local storage
@@ -100,6 +105,7 @@ void process_sample(adxl345_t *adxl345);
 static uint8_t s_high_water;
 static uint32_t s_samples_read;
 static float s_total_x;
+static int32_t s_autoc_buf[WINDOW_SIZE * 2];
 
 // =============================================================================
 // main code
@@ -117,6 +123,11 @@ int main(void) {
   animation_segments();
   display_characters();
 
+  // for (int i=0; i<100; i++) {
+  //   dummy_autoc();
+  //   delay_ms(10);
+  // }
+  //
   err = adxl345_dev_init(&adxl345_dev, &ADXL345_0, ADXL345_I2C_PRIMARY_ADDRESS,
                          I2C_M_SEVEN);
   printf("adxl345_dev_init() => %d\n", err);
@@ -127,7 +138,7 @@ int main(void) {
 
 
   // Configure ADXL345: 100 Hz, FIFO enabled, water mark = 1 sample
-  err = adxl345_set_bw_rate_reg(&adxl345, ADXL345_RATE_400);
+  err = adxl345_set_bw_rate_reg(&adxl345, ADXL345_RATE_200);
   printf("adxl345_set_bw_rate_reg() => %d\n", err);
   err = adxl345_set_fifo_ctl_reg(&adxl345, ADXL345_FIFO_MODE_ENABLE | 1);
   printf("adxl345_set_fifo_ctl_reg() => %d\n", err);
@@ -135,13 +146,12 @@ int main(void) {
   err = adxl345_start(&adxl345);
   printf("adxl345_start() => %d\n", err);
 
-  // Ensure that the measure bit is set...
-
   s_high_water = 0;
   s_samples_read = 0;
   s_total_x = 0.0;
   while (1) {
     process_samples(&adxl345);
+    dummy_autoc();
     printf("%d %5ld %f\n", s_high_water, s_samples_read, s_total_x);
   }
 }
@@ -190,8 +200,7 @@ static void display_characters(void) {
   slcd_sync_write_string(&SEGMENT_LCD_0, (uint8_t *)"abcdefgh", 8, 5);
 }
 
-
-void process_samples(adxl345_t *adxl345) {
+static void process_samples(adxl345_t *adxl345) {
   uint8_t reg, available;
   // adxl345_err_t err;
 
@@ -205,11 +214,37 @@ void process_samples(adxl345_t *adxl345) {
   }
 }
 
-void process_sample(adxl345_t *adxl345) {
+static void process_sample(adxl345_t *adxl345) {
   adxl345_sample_t sample;
   // adxl345_err_t err;
 
   adxl345_get_sample(adxl345, &sample);
   s_samples_read += 1;
   s_total_x += sample.x;
+}
+
+/** @brief Time how long it takes to run the autocorrelation function.
+*/
+static int32_t dummy_autoc() {
+  int32_t i_max, p_max;
+
+  set_test_pin(true);
+  p_max = 0;
+  i_max = -1;
+
+  for (int i=0; i<WINDOW_SIZE; i++) {
+    for (int j=0; j<WINDOW_SIZE; j++) {
+      uint32_t p = s_autoc_buf[j] * s_autoc_buf[j+i];
+      if ((p > p_max) || (i_max <= 0)) {
+        p_max = p;
+        i_max = i;
+      }
+    }
+  }
+  set_test_pin(false);
+  return i_max;
+}
+
+static void set_test_pin(bool val) {
+  gpio_set_pin_level(TEST_PIN, val);  // PC03 on EXT1.10
 }

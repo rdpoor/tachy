@@ -12,6 +12,7 @@
   <armgcc.compiler.directories.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.4.0\CMSIS\Core\Include\</Value>
+      <Value>../../../src</Value>
       <Value>../Config</Value>
       <Value>../</Value>
       <Value>../examples</Value>
@@ -34,10 +35,9 @@
       <Value>../qtouch/include</Value>
       <Value>../stdio_redirect</Value>
       <Value>%24(PackRepoDir)\atmel\SAML22_DFP\1.2.77\include</Value>
-      <Value>../../../src</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
-  <armgcc.compiler.optimization.level>Optimize debugging experience (-Og)</armgcc.compiler.optimization.level>
+  <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
   <armgcc.compiler.warnings.AllWarnings>True</armgcc.compiler.warnings.AllWarnings>
@@ -53,12 +53,18 @@
   <armgcc.linker.libraries.LibrarySearchPaths>
     <ListValues>
       <Value>..\qtouch\lib\gcc</Value>
+      <Value>..\qtouch\lib\gcc</Value>
       <Value>%24(ProjectDir)\Device_Startup</Value>
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.memorysettings.ExternalRAM />
   <armgcc.linker.miscellaneous.LinkerFlags>-Tsaml22n18a_flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.linker.miscellaneous.OtherObjects>
+    <ListValues>
+      <Value>-u _print_float</Value>
+    </ListValues>
+  </armgcc.linker.miscellaneous.OtherObjects>
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.4.0\CMSIS\Core\Include\</Value>

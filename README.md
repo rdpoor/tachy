@@ -144,3 +144,48 @@ maximum across all 256 steps.
 By pulling CS to ground, the ADXL345 will use SPI protocols instead of I2C.  This
 would allow sample data to be fetch much faster.  But this may not be the
 limiting factor.
+
+### The sample buffer
+
+We have a circular buffer that's 512 samples long.  The oldest samples is at
+get_sample(0), the newest is at get_sample(SAMPLE_BUF_SIZE-1);
+
+    #define SAMPLE_BUF_SIZE 512
+    #define WINDOW_SIZE (SAMPLE_BUF_SIZE / 2)
+
+    static int32_t sample_buf[SAMPLE_BUF_SIZE];
+    static int s_sample_index;
+
+    int32_t get_sample(int index) {
+      return buf[(s_sample_index + index) % SAMPLE_BUF_SIZE];
+    }
+
+    void put_sample(int32_t sample) {
+      sample_buf[s_sample_index++] = sample;
+      if (s_sample_index >= SAMPLE_BUF_SIZE) {
+        s_sample_index %= SAMPLE_BUF_SIZE;
+      }
+    }
+
+    int32_t autocorr_aux(int offset) {
+      int32_t total = 0;
+      for (int i=0; i<WINDOW_SIZE; i++) {
+        int32_t a = get_sample(i);
+        int32_t b = get_sample(i+offset);
+        total += a * b;
+      }
+      return total;
+    }
+
+    int autocorrelate() {
+      int32_t max_corr = autocorr_aux(MIN_OFFSET);
+      int max_offset = MIN_OFFSET;
+      for (int offset=MIN_OFFSET+1; offset<WINDOW_SIZE; offset++) {
+        int32_t corr = autocorr_aux(offset);
+        if (corr > max_corr) {
+          max_corr = corr;
+          max_offset = offset;
+        }
+      }
+      return max_offset;
+    }

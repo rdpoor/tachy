@@ -322,11 +322,34 @@ adxl345_err_t adxl345_set_thresh_ff_g(adxl345_t *adxl345, float val);
 adxl345_err_t adxl345_get_time_ff_s(adxl345_t *adxl345, float *val);
 adxl345_err_t adxl345_set_time_ff_s(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_sample_is_available(adxl345_t *adxl345, bool *val);
+adxl345_err_t adxl345_available_samples(adxl345_t *adxl345, uint8_t *val) {
+  uint8_t reg;
+  adxl345_err_t err = adxl345_get_fifo_status_reg(adxl345, &reg);
+  *val = (err == ADXL345_ERR_NONE) ? reg & 0x1F : 0;
+  return err;
+}
 
 /** @brief Read an x, y, z sample frame.
  */
-adxl345_err_t adxl345_get_sample(adxl345_t *adxl345, adxl345_sample_t *sample) {
+adxl345_err_t adxl345_get_isample(adxl345_t *adxl345, adxl345_isample_t *sample) {
+  adxl345_data_regs_t regs;
+  adxl345_err_t err;
+
+  err = adxl345_get_data_regs(adxl345, &regs);
+  if (err != ADXL345_ERR_NONE) return err;
+
+  // Using default values:
+  //   x1:x0 is a 16 bit signed value with 10 bits of resolution.
+  sample->x = (int16_t)((regs.x1 << 8) | regs.x0);
+  sample->y = (int16_t)((regs.y1 << 8) | regs.y0);
+  sample->z = (int16_t)((regs.z1 << 8) | regs.z0);
+
+  return ADXL345_ERR_NONE;
+}
+
+/** @brief Read an x, y, z sample frame.
+ */
+adxl345_err_t adxl345_get_fsample(adxl345_t *adxl345, adxl345_fsample_t *sample) {
   adxl345_data_regs_t regs;
   adxl345_err_t err;
 
@@ -343,8 +366,6 @@ adxl345_err_t adxl345_get_sample(adxl345_t *adxl345, adxl345_sample_t *sample) {
 
   return ADXL345_ERR_NONE;
 }
-
-adxl345_err_t adxl345_get_samples(adxl345_t *adxl345, adxl345_sample_t *samples, int num_samples);
 
 // =============================================================================
 // local (static) code

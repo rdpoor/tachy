@@ -83,7 +83,14 @@
 #define TSLCD_SEG_BT2 SLCD_SEGID(5, 2)
 #define TSLCD_SEG_BT3 SLCD_SEGID(5, 3)
 
-#define WINDOW_SIZE 256
+#define SAMPLE_BUF_SIZE 512
+#define WINDOW_SIZE (SAMPLE_BUF_SIZE / 2)
+#define MIN_OFFSET 12
+
+typedef struct {
+  int32_t dot_product;
+  int offset;
+} correlation_t;
 
 // =============================================================================
 // local declarations
@@ -93,19 +100,32 @@ static void blink_segments(void);
 static void animation_segments(void);
 static void display_characters(void);
 
-static void process_samples(adxl345_t *adxl345);
-static void process_sample(adxl345_t *adxl345);
+static void fetch_samples(adxl345_t *adxl345);
 
-static int32_t dummy_autoc();
 static void set_test_pin(bool val);
+
+/** @brief Fetch a sample from the circular buffer */
+static int32_t get_sample(int index);
+
+/** @brief Write a sample to the circular buffer */
+static void put_sample(int32_t sample);
+
+/** @brief Compute one point of the autocorrlation */
+static int32_t dot_product(int offset);
+
+/** @brief Return the offset that produces the highest correlation */
+static void autocorrelate(correlation_t *corr);
+
+static void dump_sample_buf(void);
 
 // =============================================================================
 // local storage
 
 static uint8_t s_high_water;
 static uint32_t s_samples_read;
-static float s_total_x;
-static int32_t s_autoc_buf[WINDOW_SIZE * 2];
+static int32_t sample_buf[SAMPLE_BUF_SIZE];
+static int s_sample_index;
+
 
 // =============================================================================
 // main code
@@ -115,6 +135,7 @@ int main(void) {
   adxl345_err_t err;
   adxl345_t adxl345;
   adxl345_dev_t adxl345_dev;
+  correlation_t corr;
 
   /* Replace with your application code */
   slcd_sync_enable(&SEGMENT_LCD_0);
@@ -123,11 +144,6 @@ int main(void) {
   animation_segments();
   display_characters();
 
-  // for (int i=0; i<100; i++) {
-  //   dummy_autoc();
-  //   delay_ms(10);
-  // }
-  //
   err = adxl345_dev_init(&adxl345_dev, &ADXL345_0, ADXL345_I2C_PRIMARY_ADDRESS,
                          I2C_M_SEVEN);
   printf("adxl345_dev_init() => %d\n", err);
@@ -135,7 +151,6 @@ int main(void) {
   printf("adxl345_init() => %d\n", err);
   err = adxl345_stop(&adxl345);
   printf("adxl345_stop() => %d\n", err);
-
 
   // Configure ADXL345: 100 Hz, FIFO enabled, water mark = 1 sample
   err = adxl345_set_bw_rate_reg(&adxl345, ADXL345_RATE_200);
@@ -148,11 +163,14 @@ int main(void) {
 
   s_high_water = 0;
   s_samples_read = 0;
-  s_total_x = 0.0;
   while (1) {
-    process_samples(&adxl345);
-    dummy_autoc();
-    printf("%d %5ld %f\n", s_high_water, s_samples_read, s_total_x);
+    fetch_samples(&adxl345);
+    autocorrelate(&corr);
+    printf("%d %5ld %3d %ld\n", s_high_water, s_samples_read, corr.offset, corr.dot_product);
+    // if (s_samples_read > SAMPLE_BUF_SIZE) {
+    //   dump_sample_buf();
+    //   return 0;
+    // }
   }
 }
 
@@ -200,51 +218,83 @@ static void display_characters(void) {
   slcd_sync_write_string(&SEGMENT_LCD_0, (uint8_t *)"abcdefgh", 8, 5);
 }
 
-static void process_samples(adxl345_t *adxl345) {
-  uint8_t reg, available;
+/** @brief Slurp available samples from FIFO and store in circular buffer */
+static void fetch_samples(adxl345_t *adxl345) {
+  uint8_t available;
+  adxl345_isample_t sample;
   // adxl345_err_t err;
 
-  // Read FIFO status register to find how many samples ara available
-  adxl345_get_fifo_status_reg(adxl345, &reg);
-  available = reg & 0x1f;
+  /* err = */ adxl345_available_samples(adxl345, &available);
   // note high water mark
   if (available > s_high_water) s_high_water = available;
+  s_samples_read += available;
+
   for (int i = 0; i < available; i++) {
-    process_sample(adxl345);
+    /* err = */ adxl345_get_isample(adxl345, &sample);
+    // use only the z axis
+    // printf("%d\n", sample.z - 245);
+    put_sample(sample.z);
   }
-}
-
-static void process_sample(adxl345_t *adxl345) {
-  adxl345_sample_t sample;
-  // adxl345_err_t err;
-
-  adxl345_get_sample(adxl345, &sample);
-  s_samples_read += 1;
-  s_total_x += sample.x;
-}
-
-/** @brief Time how long it takes to run the autocorrelation function.
-*/
-static int32_t dummy_autoc() {
-  int32_t i_max, p_max;
-
-  set_test_pin(true);
-  p_max = 0;
-  i_max = -1;
-
-  for (int i=0; i<WINDOW_SIZE; i++) {
-    for (int j=0; j<WINDOW_SIZE; j++) {
-      uint32_t p = s_autoc_buf[j] * s_autoc_buf[j+i];
-      if ((p > p_max) || (i_max <= 0)) {
-        p_max = p;
-        i_max = i;
-      }
-    }
-  }
-  set_test_pin(false);
-  return i_max;
 }
 
 static void set_test_pin(bool val) {
   gpio_set_pin_level(TEST_PIN, val);  // PC03 on EXT1.10
+}
+
+/** @brief Read a sample from the circular buffer.
+ *
+ * @param index Index into the buffer.  index = 0 is the oldest sample,
+ *              index = SAMPLES_BUFFER_SIZE-1 is the newest
+ * @return The sample.
+ */
+static int32_t get_sample(int index) {
+  return sample_buf[(s_sample_index + index) % SAMPLE_BUF_SIZE];
+}
+
+/** @brief Write a sample into the circular buffer.
+ *
+ * This replaces the oldest sample with the newest.
+ *
+ * @param sample The sample to write.
+ */
+static void put_sample(int32_t sample) {
+  sample_buf[s_sample_index++] = sample;
+  if (s_sample_index >= SAMPLE_BUF_SIZE) {
+    s_sample_index %= SAMPLE_BUF_SIZE;
+  }
+}
+
+static int32_t dot_product(int offset) {
+  int32_t total = 0;
+  for (int i=0; i<WINDOW_SIZE; i++) {
+    int32_t a = get_sample(i);
+    int32_t b = get_sample(i+offset);
+    total += a * b;
+  }
+  return total;
+}
+
+static void autocorrelate(correlation_t *corr) {
+  set_test_pin(true);  // for scope timing
+
+  // compute first point (makes inner loop more efficient)
+  corr->dot_product = dot_product(MIN_OFFSET);
+  corr->offset = MIN_OFFSET;
+
+  // compute the rest of the points
+  for (int offset=MIN_OFFSET+1; offset<WINDOW_SIZE; offset++) {
+    int32_t dp = dot_product(offset);
+    if (dp > corr->dot_product) {
+      corr->dot_product = dp;
+      corr->offset = offset;
+    }
+  }
+
+  set_test_pin(false); // for scope timing
+}
+
+static void dump_sample_buf() {
+  for (int i=0; i<SAMPLE_BUF_SIZE; i++) {
+    printf("%d, %ld\n", i, get_sample(i));
+  }
 }

@@ -208,10 +208,16 @@ typedef enum {
 } adxl345_fifo_status_reg;
 
 typedef struct {
-  float x;  ///< X value in g's
-  float y;  ///< Y value in g's
-  float z;  ///< Z value in g's
-} adxl345_sample_t;
+  int16_t x; ///< X acceleration in unspecified units
+  int16_t y; ///< Y acceleration in unspecified units
+  int16_t z; ///< Z acceleration in unspecified units
+} adxl345_isample_t;
+
+typedef struct {
+  float x;  ///< X acceleration in g's
+  float y;  ///< Y acceleration in g's
+  float z;  ///< Z acceleration in g's
+} adxl345_fsample_t;
 
 typedef struct {
   adxl345_dev_t *dev;
@@ -353,13 +359,13 @@ adxl345_err_t adxl345_set_thresh_ff_g(adxl345_t *adxl345, float val);
 adxl345_err_t adxl345_get_time_ff_s(adxl345_t *adxl345, float *val);
 adxl345_err_t adxl345_set_time_ff_s(adxl345_t *adxl345, float val);
 
-adxl345_err_t adxl345_sample_is_available(adxl345_t *adxl345, bool *val);
+adxl345_err_t adxl345_available_samples(adxl345_t *adxl345, uint8_t *val);
+
+adxl345_err_t adxl345_get_isample(adxl345_t *adxl345, adxl345_isample_t *sample);
 
 /** @brief Read an x, y, z sample frame.
  */
-adxl345_err_t adxl345_get_sample(adxl345_t *adxl345, adxl345_sample_t *sample);
-
-adxl345_err_t adxl345_get_samples(adxl345_t *adxl345, adxl345_sample_t *samples, int num_samples);
+adxl345_err_t adxl345_get_fsample(adxl345_t *adxl345, adxl345_fsample_t *sample);
 
 #ifdef __cplusplus
 }
